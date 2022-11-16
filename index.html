@@ -5,7 +5,7 @@
     <link rel="icon" type="image/svg+xml" href="/color-vis/vite.svg"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Vite App</title>
-  <script type="module" crossorigin src="/color-vis/assets/index.30931570.js"></script>
+  <script type="module" crossorigin src="/color-vis/assets/index.f2b14657.js"></script>
   <link rel="stylesheet" href="/color-vis/assets/index.1a422571.css">
 </head>
 <body>
@@ -38,8 +38,16 @@
         </p>
         <select id="mySelect">
         </select>
+
+        <select id="meshSelect">
+        </select>
+
+        <select id="meshMatSelect">
+        </select>
     </div>
 </div>
+
+
 <script type="x-shader/x-vertex" id="vertexshader">
 
 			attribute float size;
@@ -61,7 +69,6 @@
 
 
 </script>
-
 <script type="x-shader/x-fragment" id="fragmentshader">
 
 			uniform sampler2D pointTexture;
@@ -75,8 +82,6 @@
 				gl_FragColor = gl_FragColor * texture2D( pointTexture, gl_PointCoord );
 
 			}
-
-
 
 </script>
 
