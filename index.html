@@ -36,8 +36,16 @@
         </p>
         <select id="mySelect">
         </select>
+
+        <select id="meshSelect">
+        </select>
+
+        <select id="meshMatSelect">
+        </select>
     </div>
 </div>
+
+
 <script type="x-shader/x-vertex" id="vertexshader">
 
 			attribute float size;
@@ -59,7 +67,6 @@
 
 
 </script>
-
 <script type="x-shader/x-fragment" id="fragmentshader">
 
 			uniform sampler2D pointTexture;
@@ -73,8 +80,6 @@
 				gl_FragColor = gl_FragColor * texture2D( pointTexture, gl_PointCoord );
 
 			}
-
-
 
 </script>
 <script type="module" src="/3d.js"></script>

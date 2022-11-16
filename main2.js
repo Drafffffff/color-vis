@@ -11,6 +11,7 @@ function lab2rgb(lab) {
     g,
     b;
 
+
   x = 0.95047 * (x * x * x > 0.008856 ? x * x * x : (x - 16 / 116) / 7.787);
   y = 1.0 * (y * y * y > 0.008856 ? y * y * y : (y - 16 / 116) / 7.787);
   z = 1.08883 * (z * z * z > 0.008856 ? z * z * z : (z - 16 / 116) / 7.787);
@@ -45,6 +46,8 @@ const nodes = root.descendants();
 const pack = d3.pack().size([window.innerWidth, window.innerHeight]).padding(1)(
   d3.hierarchy(data).sum(d => d.subparent)
 );
+
+
 
 console.log(pack);
 // const simulation = d3
