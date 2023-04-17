@@ -1,5 +1,7 @@
 import "./style.css";
+import { ConvexGeometry } from "three/addons/geometries/ConvexGeometry.js";
 import data from "./colors.csv";
+import color_convex from "./color-covex.csv";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import * as THREE from "three";
 import { map, lab2rgb } from "./utils.js";
@@ -8,26 +10,45 @@ import labPlugin from "colord/plugins/lab";
 import { qing, chi, huang, bai, hei } from "./meshpoints";
 import { json } from "d3";
 
+//a map function like p5js without contrain funcion
+function number_map(value, start1, stop1, start2, stop2) {
+  var newval =
+    ((value - start1) / (stop1 - start1)) * (stop2 - start2) + start2;
+  return newval;
+}
+
+//lab值映射到0-1
+const color_convex_mapped = color_convex.map((d) => {
+  return {
+    l: number_map(d.l, 0, 100, 0, 1),
+    a: number_map(d.a, -128, 127, 0, 1),
+    b: number_map(d.b, -128, 127, 0, 1),
+    color: d.color,
+    form: d.form,
+  };
+});
+
 // console.log(data.filter(d=>d.subparent==="棕"))
 let colorsData = data;
 extend([labPlugin]);
 const mySelect = document.querySelector("#mySelect");
 mySelect.add(new Option("全部"));
 let op = [];
-data.forEach(d => {
+data.forEach((d) => {
   op.push(d.subparent);
 });
 op = Array.from(new Set(op));
-op.forEach(d => {
+op.forEach((d) => {
   mySelect.add(new Option(d));
 });
+const al = color_convex_mapped.filter((d) => d.color === "酱色");
+console.log(al);
+console.log(color_convex);
 
 const meshSelect = document.querySelector("#meshSelect");
 const meshMatselect = document.querySelector("#meshMatSelect");
 meshMatselect.add(new Option("显示线框"));
 meshMatselect.add(new Option("显示面"));
-
-
 
 meshSelect.add(new Option("不显示边界"));
 meshSelect.add(new Option("青"));
@@ -73,21 +94,26 @@ boundaryHei.setAttribute("position", new THREE.BufferAttribute(hei, 3));
 const mqing = new THREE.MeshBasicMaterial({
   color: 0x00ffff,
   wireframe: true,
+  visible: false,
 });
 const mchi = new THREE.MeshBasicMaterial({
   color: 0xed1a3d,
+  visible: false,
   wireframe: true,
 });
 const mhuang = new THREE.MeshBasicMaterial({
   color: 0xffff00,
+  visible: false,
   wireframe: true,
 });
 const mbai = new THREE.MeshBasicMaterial({
   color: 0xffffff,
+  visible: false,
   wireframe: true,
 });
 const mhei = new THREE.MeshBasicMaterial({
   color: 0x000000,
+  visible: false,
   wireframe: true,
 });
 
@@ -98,7 +124,20 @@ const MeshBai = new THREE.Mesh(boundaryBai, mbai);
 const MeshHei = new THREE.Mesh(boundaryHei, mhei);
 scene.add(MeshQing, MeshChi, MeshHuang, MeshBai, MeshHei);
 const group = new THREE.Group();
-colorsData.forEach((d, i) => {
+// colorsData.forEach((d, i) => {
+//   const c = colord({ l: d.l, a: d.a, b: d.b }).toHex();
+//   const sprite1 = new THREE.Sprite(new THREE.SpriteMaterial({ color: c }));
+//   const x = map(d.l, 0, 100, 0, 1, true);
+//   const y = map(d.a, -128, 127, 0, 1, true);
+//   const z = map(d.b, -128, 127, 0, 1, true);
+//   sprite1.position.set(x, y, z);
+//   sprite1.scale.set(0.05, 0.05, 0.05);
+//   sprite1.colorIndex = i;
+//   group.add(sprite1);
+// });
+//
+
+al.forEach((d, i) => {
   const c = colord({ l: d.l, a: d.a, b: d.b }).toHex();
   const sprite1 = new THREE.Sprite(new THREE.SpriteMaterial({ color: c }));
   const x = map(d.l, 0, 100, 0, 1, true);
@@ -111,6 +150,20 @@ colorsData.forEach((d, i) => {
 });
 
 scene.add(group);
+//add BufferGeometry
+const g = new THREE.BufferGeometry();
+
+const arra = al.map((e) => {
+  return new THREE.Vector3(parseFloat(e.l), parseFloat(e.a), parseFloat(e.b));
+});
+
+const testG = new ConvexGeometry(arra);
+const testM = new THREE.MeshBasicMaterial({
+  color: 0x00ff00,
+  wireframe: false,
+});
+const testMesh = new THREE.Mesh(testG, testM);
+scene.add(testMesh);
 
 const size = {
   width: window.innerWidth,
@@ -129,7 +182,7 @@ renderer.setPixelRatio(window.devicePixelRatio);
 renderer.setSize(size.width, size.height);
 scene.add(new THREE.AxesHelper(1.5));
 scene.background = new THREE.Color(0x555555);
-onMeshChangeOption()
+// onMeshChangeOption()
 animate();
 
 function animate() {
@@ -203,7 +256,7 @@ function onChangeOption(d) {
   if (index === 0) {
     colorsData = data;
   } else {
-    colorsData = data.filter(d => d.subparent === val);
+    colorsData = data.filter((d) => d.subparent === val);
   }
   group.clear();
   colorsData.forEach((d, i) => {
@@ -223,65 +276,64 @@ function onMeshChangeOption(d) {
   const index = d.srcElement.selectedIndex;
   const val = d.srcElement.options[index].text;
   if (val === "青") {
-    mqing.visible = true
-    mchi.visible = false
-    mhuang.visible = false
-    mbai.visible = false
-    mhei.visible = false
+    mqing.visible = true;
+    mchi.visible = false;
+    mhuang.visible = false;
+    mbai.visible = false;
+    mhei.visible = false;
   } else if (val === "赤") {
-    mqing.visible = false
-    mchi.visible = true
-    mhuang.visible = false
-    mbai.visible = false
-    mhei.visible = false
+    mqing.visible = false;
+    mchi.visible = true;
+    mhuang.visible = false;
+    mbai.visible = false;
+    mhei.visible = false;
   } else if (val === "黄") {
-    mqing.visible = false
-    mchi.visible = false
-    mhuang.visible = true
-    mbai.visible = false
-    mhei.visible = false
+    mqing.visible = false;
+    mchi.visible = false;
+    mhuang.visible = true;
+    mbai.visible = false;
+    mhei.visible = false;
   } else if (val === "白") {
-    mqing.visible = false
-    mchi.visible = false
-    mhuang.visible = false
-    mbai.visible = true
-    mhei.visible = false
+    mqing.visible = false;
+    mchi.visible = false;
+    mhuang.visible = false;
+    mbai.visible = true;
+    mhei.visible = false;
   } else if (val === "黑") {
-    mqing.visible = false
-    mchi.visible = false
-    mhuang.visible = false
-    mbai.visible = false
-    mhei.visible = true
+    mqing.visible = false;
+    mchi.visible = false;
+    mhuang.visible = false;
+    mbai.visible = false;
+    mhei.visible = true;
   } else if (val === "不显示边界") {
-    mqing.visible = false
-    mchi.visible = false
-    mhuang.visible = false
-    mbai.visible = false
-    mhei.visible = false
+    mqing.visible = false;
+    mchi.visible = false;
+    mhuang.visible = false;
+    mbai.visible = false;
+    mhei.visible = false;
   } else if (val === "显示全部边界") {
-    mqing.visible = true
-    mchi.visible = true
-    mhuang.visible = true
-    mbai.visible = true
-    mhei.visible = true
+    mqing.visible = true;
+    mchi.visible = true;
+    mhuang.visible = true;
+    mbai.visible = true;
+    mhei.visible = true;
   }
 }
 
-
-function onMeshMatChangeOption(d){
-    const index = d.srcElement.selectedIndex;
-    const val = d.srcElement.options[index].text;
-    if(val ==="显示线框"){
-        mqing.wireframe=true
-        mchi.wireframe=true
-        mhuang.wireframe=true
-        mbai.wireframe=true
-        mhei.wireframe=true
-    }else if("显示面"){
-        mqing.wireframe=false
-        mchi.wireframe=false
-        mhuang.wireframe=false
-        mbai.wireframe=false
-        mhei.wireframe=false
-    }
+function onMeshMatChangeOption(d) {
+  const index = d.srcElement.selectedIndex;
+  const val = d.srcElement.options[index].text;
+  if (val === "显示线框") {
+    mqing.wireframe = true;
+    mchi.wireframe = true;
+    mhuang.wireframe = true;
+    mbai.wireframe = true;
+    mhei.wireframe = true;
+  } else if ("显示面") {
+    mqing.wireframe = false;
+    mchi.wireframe = false;
+    mhuang.wireframe = false;
+    mbai.wireframe = false;
+    mhei.wireframe = false;
+  }
 }
